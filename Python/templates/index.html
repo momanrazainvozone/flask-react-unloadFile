@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{dropzone_cdn.rstrip('/')}}/{{dropzone_version}}/min/dropzone.min.css"/>
+    <link rel="stylesheet" href="{{dropzone_cdn.rstrip('/')}}/{{dropzone_version}}/min/basic.min.css"/>
+    <script type="application/javascript"
+        src="{{dropzone_cdn.rstrip('/')}}/{{dropzone_version}}/min/dropzone.min.js">
+    </script>
+    <title>pyfiledrop</title>
+</head>
+<body>
+
+    <div id="content" style="width: 800px; margin: 0 auto;">
+        <h2>Upload new files</h2>
+        <form method="POST" action='/upload' class="dropzone dz-clickable" id="dropper" enctype="multipart/form-data">
+        </form>
+
+        <h2>
+            Uploaded
+            <input type="button" value="Clear" onclick="clearCookies()" />
+        </h2>
+        <div id="uploaded">
+
+        </div>
+
+        <script type="application/javascript">
+            function clearCookies() {
+                document.cookie = "files=; Max-Age=0";
+                document.getElementById("uploaded").innerHTML = "";
+            }
+
+            function getFilesFromCookie() {
+                try { return document.cookie.split("=", 2)[1].split("||");} catch (error) { return []; }
+            }
+
+            function saveCookie(new_file) {
+                    let all_files = getFilesFromCookie();
+                    all_files.push(new_file);
+                    document.cookie = `files=${all_files.join("||")}`;
+            }
+
+            function generateLink(combo){
+                const uuid = combo.split('|^^|')[0];
+                const name = combo.split('|^^|')[1];
+                if ({{allow_downloads}}) {
+                    return `<a href="/download/${uuid}" download="${name}">${name}</a>`;
+                }
+                return name;
+            }
+
+
+            function init() {
+
+                Dropzone.options.dropper = {
+                    paramName: 'file',
+                    chunking: true,
+                    forceChunking: {{dropzone_force_chunking}},
+                    url: '/upload',
+                    retryChunks: true,
+                    parallelChunkUploads: {{dropzone_parallel_chunks}},
+                    timeout: {{dropzone_timeout}}, // microseconds
+                    maxFilesize: {{dropzone_max_file_size}}, // megabytes
+                    chunkSize: {{dropzone_chunk_size}}, // bytes
+                    init: function () {
+                        this.on("complete", function (file) {
+                            let combo = `${file.upload.uuid}|^^|${file.upload.filename}`;
+                            saveCookie(combo);
+                            document.getElementById("uploaded").innerHTML += generateLink(combo)  + "<br />";
+                        });
+                    }
+                }
+
+                if (typeof document.cookie !== 'undefined' ) {
+                    let content = "";
+                     getFilesFromCookie().forEach(function (combo) {
+                        content += generateLink(combo) + "<br />";
+                    });
+
+                    document.getElementById("uploaded").innerHTML = content;
+                }
+            }
+
+            init();
+
+        </script>
+    </div>
+</body>
+</html>
