@@ -19,7 +19,7 @@ export const UploadFile = () => {
 
     const reqObj = {
       method: "POST",
-      url: "http://192.168.23.214:8000/upload",
+      url: "http://18.118.116.85:8000/upload",
       data: form_data,
     };
     const results = await axios(reqObj);
