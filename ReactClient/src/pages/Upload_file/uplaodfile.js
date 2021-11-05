@@ -15,12 +15,10 @@ export const UploadFile = () => {
   const uploadFile = async () => {
     setuplaodingFile(true);
     const form_data = new FormData();
-    // form_data.append("singleImage", selectedFile);
     form_data.append("file", selectedFile);
 
     const reqObj = {
       method: "POST",
-      //url: "http://localhost:5000/singleFile",
       url: "http://192.168.23.214:8000/upload",
       data: form_data,
     };
